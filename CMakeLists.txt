@@ -1,7 +1,18 @@
-cmake_minimum_required (VERSION 2.8.11)
+cmake_minimum_required (VERSION 3.0)
 
 # Defer enabling C and CXX languages.
-project (BoringSSL NONE)
+project (BoringSSL VERSION 1.0.0 LANGUAGES NONE)
+
+###############
+### Install ###
+###############
+set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
+set(config_install_dir "lib/cmake/${PROJECT_NAME}")
+set(include_install_dir "include")
+set(version_config "${generated_dir}/${PROJECT_NAME}ConfigVersion.cmake")
+set(project_config "${generated_dir}/${PROJECT_NAME}Config.cmake")
+set(targets_export_name "${PROJECT_NAME}Targets")
+set(namespace "${PROJECT_NAME}::")
 
 if(WIN32)
   # On Windows, prefer cl over gcc if both are available. By default most of
@@ -297,6 +308,17 @@ if(FUZZ)
     # libFuzzer does not pass our aggressive warnings. It also must be built
     # without -fsanitize-coverage options or clang crashes.
     set_target_properties(Fuzzer PROPERTIES COMPILE_FLAGS "-Wno-shadow -Wno-format-nonliteral -fsanitize-coverage=0")
+
+    ### Install ###
+    install(
+      TARGETS Fuzzer
+      EXPORT "${targets_export_name}"
+      LIBRARY DESTINATION "lib"
+      ARCHIVE DESTINATION "lib"
+      RUNTIME DESTINATION "bin"
+      INCLUDES DESTINATION "${include_install_dir}"
+      )
+    
   endif()
 
   add_subdirectory(fuzz)
@@ -317,3 +339,35 @@ add_custom_target(
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     DEPENDS all_tests bssl_shim
     ${MAYBE_USES_TERMINAL})
+
+
+  ### install
+  
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+  "${version_config}" COMPATIBILITY SameMajorVersion
+  )
+
+# Note: use 'targets_export_name'
+configure_package_config_file(
+  "${PROJECT_SOURCE_DIR}/cmake/Config.cmake.in"
+  "${project_config}"
+  INSTALL_DESTINATION "${config_install_dir}"
+  )
+
+install(
+  DIRECTORY "include/openssl" # No trailing slash
+  DESTINATION "${include_install_dir}"
+  FILES_MATCHING PATTERN "*.h"
+  )
+
+install(
+  FILES "${project_config}" "${version_config}"
+  DESTINATION "${config_install_dir}"
+  )
+
+install(
+  EXPORT "${targets_export_name}"
+  NAMESPACE "${namespace}"
+  DESTINATION "${config_install_dir}"
+  )
