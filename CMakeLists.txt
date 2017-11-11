@@ -356,15 +356,6 @@ configure_package_config_file(
   INSTALL_DESTINATION "${config_install_dir}"
   )
 
-# install(
-#   TARGETS ssl
-#   EXPORT "${targets_export_name}"
-#   LIBRARY DESTINATION "lib"
-#   ARCHIVE DESTINATION "lib"
-#   RUNTIME DESTINATION "bin"
-#   INCLUDES DESTINATION "${include_install_dir}"
-#   )
-
 install(
   DIRECTORY "include/openssl" # No trailing slash
   DESTINATION "${include_install_dir}"
