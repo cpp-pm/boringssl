@@ -1,5 +1,4 @@
-cmake_minimum_required (VERSION 2.8.11)
-cmake_policy(SET CMP0048 NEW)
+cmake_minimum_required (VERSION 3.0)
 
 # Defer enabling C and CXX languages.
 project (BoringSSL VERSION 1.0.0 LANGUAGES NONE)
